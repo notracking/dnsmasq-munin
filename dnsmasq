@@ -8,7 +8,7 @@ dnsmasq - Plugin to monitor dnsmasq queries
 
 =head1 APPLICABLE SYSTEMS
 
-All systems with "bash", "sed"  and "dnsmasq"
+All systems with "bash", "sed" and "dnsmasq"
 
 =head1 CONFIGURATION
 
