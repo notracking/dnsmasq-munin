@@ -1,0 +1,115 @@
+#!/bin/bash
+# -*- sh -*-
+: <<=cut
+
+=head1 NAME
+
+dnsmasq - Plugin to monitor dnsmasq queries
+
+=head1 APPLICABLE SYSTEMS
+
+All systems with "bash", "sed"  and "dnsmasq"
+
+=head1 CONFIGURATION
+
+The following is the default configuration
+
+  [dnsmasq]
+  env.logfile /var/log/dnsmasq.log
+
+The user running this plugin needs read and write access to the
+fail2ban communications socket.  You will need to add this:
+
+  [dnsmasq]
+  user root
+
+=head1 INTERPRETATION
+
+This plugin shows a graph with one line per active fail2ban jail, each
+showing the number of blacklisted addresses for that jail.
+
+In addition, a line with the total number of blacklisted addresses is
+displayed.
+
+=head1 MAGIC MARKERS
+
+  #%# family=auto
+  #%# capabilities=autoconf
+
+=head1 VERSION
+
+  1.0.20090423
+
+=head1 BUGS
+
+Needs bash. Uses bashisms ${parm/?/pat/string} and $'...' to avoid
+running external programs.
+
+=head1 AUTHOR
+
+notracking <https://github.com/notracking>
+Based on fail2ban plugin by: Stig Sandbeck Mathisen <ssm@fnord.no>
+
+=head1 LICENSE
+
+GPLv2
+
+=cut
+
+
+##############################
+# Configurable variables
+logfile=${logfile:-/var/log/dnsmasq.log}
+
+# Print the munin values
+values() {
+    echo -n "dnsmasq_forwarded.value "
+    cat ${logfile} |sed -n "/^$(date --date='5 minutes ago' '+%b %_d %H:%M')/,\$p" |grep ": forwarded" |wc -l
+
+    echo -n "dnsmasq_cached.value "
+    cat ${logfile} |sed -n "/^$(date --date='5 minutes ago' '+%b %_d %H:%M')/,\$p" |grep ": cached" |wc -l
+
+    echo -n "dnsmasq_blocked.value "
+    cat ${logfile} |sed -n "/^$(date --date='5 minutes ago' '+%b %_d %H:%M')/,\$p" |grep "0\.0\.0\.0" |wc -l
+}
+
+# Print the munin config
+config() {
+    echo 'graph_title Query stats for dnsmasq'
+    echo 'graph_info This graph shows the number of queries resolved by dnsmasq'
+    echo 'graph_category network'
+    echo 'graph_vlabel Number of queries'
+
+    echo 'graph_args --base 1000 -l 0'
+    echo 'graph_total total'
+
+    echo 'dnsmasq_forwarded.label forwarded'
+    echo 'dnsmasq_cached.label cached'
+    echo 'dnsmasq_blocked.label blocked'
+}
+
+# Print autoconfiguration hint
+autoconf() {
+    if [ -f ${logfile} ]
+    then
+        echo "yes"
+    else
+        echo "no (${logfile} not found)"
+    fi
+    exit
+}
+
+##############################
+# Main
+
+case $1 in
+    config)
+        config
+        ;;
+    autoconf)
+        autoconf
+        ;;
+    *)
+        values
+        ;;
+esac
