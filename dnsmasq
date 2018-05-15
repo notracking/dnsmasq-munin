@@ -17,19 +17,16 @@ The following is the default configuration
   [dnsmasq]
   env.logfile /var/log/dnsmasq.log
 
-The user running this plugin needs read and write access to the
-fail2ban communications socket.  You will need to add this:
+The user running this plugin needs read access to the
+dnsmasq logfiles:
 
   [dnsmasq]
   user root
 
 =head1 INTERPRETATION
 
-This plugin shows a graph with one line per active fail2ban jail, each
-showing the number of blacklisted addresses for that jail.
-
-In addition, a line with the total number of blacklisted addresses is
-displayed.
+This plugin shows a graph with the number of forwarded, cached and 
+blocked dns queries.
 
 =head1 MAGIC MARKERS
 
